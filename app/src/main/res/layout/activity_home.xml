@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.design.widget.CoordinatorLayout
+            android:id="@+id/activity_home"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorAppBackgroundDark"
+            tools:context=".Activity.HomeActivity">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/movie_recycler"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fadingEdgeLength="20dp"
+                android:requiresFadingEdge="horizontal" />
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/star_fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|bottom"
+                android:layout_margin="@dimen/fab_margin_dimen"
+                android:tint="@color/colorAccent"
+                app:backgroundTint="@color/colorPrimaryLight"
+                app:fabSize="normal"
+                app:srcCompat="@drawable/ic_rating" />
+
+            <ProgressBar
+                android:id="@+id/movies_loading_progressbar"
+                android:layout_width="@dimen/movies_loading_progress_bar_width_heigh"
+                android:layout_height="@dimen/movies_loading_progress_bar_width_heigh"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/empty_state_layout"
+                layout="@layout/item_empty_state"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+
+        </android.support.design.widget.CoordinatorLayout>
+    </android.support.v4.widget.SwipeRefreshLayout>
+</layout>

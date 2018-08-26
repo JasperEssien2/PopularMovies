@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="item_background_curve_dimen">18dp</dimen>
+    <dimen name="movie_poster_image_view_height">150dp</dimen>
+    <dimen name="dimen_8dp">8dp</dimen>
+    <dimen name="card_elevation_dimen">10dp</dimen>
+    <dimen name="movie_poster_image_progressbar_height_width">36dp</dimen>
+    <dimen name="fab_margin_dimen">16dp</dimen>
+    <dimen name="dimen_4dp">4dp</dimen>
+    <dimen name="checked_indicator_width_height">15dp</dimen>
+    <dimen name="movies_loading_progress_bar_width_heigh">48dp</dimen>
+    <dimen name="dimen_2dp">2dp</dimen>
+    <dimen name="dimen_32dp">32dp</dimen>
+    <dimen name="dimen_20dp">20dp</dimen>
+    <dimen name="movie_detail_text_view_background_dimen">?android:attr/actionBarSize</dimen>
+    <dimen name="movie_detail_title_text_size">24sp</dimen>
+    <dimen name="movie_detail_image_height">200dp</dimen>
+    <dimen name="dimen_40dp">40dp</dimen>
+    <dimen name="dimen_16dp">16dp</dimen>
+    <dimen name="empty_state_image_view_width_height">100dp</dimen>
+    <dimen name="movie_detail_cast_recycler_width">60dp</dimen>
+    <dimen name="cast_crew_detail_id">67888</dimen>
+    <dimen name="splash_screen_feature_text_size">24sp</dimen>
+    <dimen name="splashscreen_movie_app_name_text_size">32sp</dimen>
+</resources>

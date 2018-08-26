@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/movie_item_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorSilver"
+        app:cardElevation="@dimen/card_elevation_dimen"
+        app:contentPadding="@dimen/dimen_4dp">
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorAppBackgroundDark">
+
+            <ImageView
+                android:id="@+id/image_movie_poster"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/movie_poster_image_view_height"
+                android:scaleType="centerCrop"
+                android:background="@color/colorDarkGray"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/textview_movie_rating"
+                style="@style/TextViewLabelsStyle"
+                android:layout_gravity="end"
+                android:layout_marginEnd="@dimen/dimen_4dp"
+                android:background="@color/colorAppBackgroundDark"
+                android:drawablePadding="@dimen/dimen_2dp"
+                android:drawableStart="@drawable/ic_rating"
+                android:gravity="center|end"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                app:layout_constraintBottom_toTopOf="@+id/textview_movie_name"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textview_movie_name"
+                tools:text="8.90" />
+
+            <TextView
+                android:id="@+id/textview_movie_name"
+                style="@style/TextViewLabelsStyle"
+                android:layout_marginBottom="@dimen/dimen_8dp"
+                android:layout_marginStart="@dimen/dimen_2dp"
+                android:layout_marginTop="@dimen/dimen_8dp"
+                android:ellipsize="end"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/textview_movie_rating"
+                app:layout_constraintStart_toEndOf="@+id/image_view_checked_indicator"
+                app:layout_constraintTop_toBottomOf="@+id/image_movie_poster"
+                tools:text="Black Panther" />
+
+            <ProgressBar
+                android:id="@+id/progressbar_image_loading"
+                android:layout_width="@dimen/movie_poster_image_progressbar_height_width"
+                android:layout_height="@dimen/movie_poster_image_progressbar_height_width"
+                android:layout_marginBottom="@dimen/dimen_8dp"
+                android:layout_marginEnd="@dimen/dimen_8dp"
+                android:layout_marginStart="@dimen/dimen_8dp"
+                android:layout_marginTop="@dimen/dimen_8dp"
+                app:layout_constraintBottom_toBottomOf="@+id/image_movie_poster"
+                app:layout_constraintEnd_toEndOf="@+id/image_movie_poster"
+                app:layout_constraintStart_toStartOf="@+id/image_movie_poster"
+                app:layout_constraintTop_toTopOf="@+id/image_movie_poster" />
+
+            <ImageView
+                android:id="@+id/image_view_checked_indicator"
+                android:layout_width="@dimen/checked_indicator_width_height"
+                android:layout_height="@dimen/checked_indicator_width_height"
+                android:layout_marginBottom="@dimen/dimen_8dp"
+                android:layout_marginStart="@dimen/dimen_2dp"
+                android:layout_marginTop="@dimen/dimen_8dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/image_movie_poster"
+                app:srcCompat="@drawable/ic_item_checked" />
+
+        </android.support.constraint.ConstraintLayout>
+    </android.support.v7.widget.CardView>
+</layout>

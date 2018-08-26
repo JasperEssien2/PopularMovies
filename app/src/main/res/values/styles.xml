@@ -1,0 +1,96 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="TextViewLabelsStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:lines">1</item>
+        <item name="android:background">@color/colorAppBackgroundDark</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="MovieDetailTextViewLabel">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:textColor">@color/colorAccentDark</item>
+        <item name="android:lines">1</item>
+        <item name="android:padding">@dimen/dimen_4dp</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="MovieDetailTextDataStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:padding">@dimen/dimen_4dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="MovieDetailTextViewSubHeaderLabel" parent="MovieDetailTextViewLabel">
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="MovieLabelUnderlining">
+        <item name="android:layout_height">@dimen/dimen_2dp</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:background">@color/colorAccentDark</item>
+    </style>
+
+    <style name="MovieDetailTextViewDataStyle" parent="MovieDetailTextDataStyle">
+        <item name="android:layout_marginEnd">@dimen/dimen_8dp</item>
+        <item name="android:layout_marginStart">@dimen/dimen_8dp</item>
+    </style>
+
+    <style name="MovieDetailStarFabStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">top|end</item>
+        <item name="android:layout_marginEnd">@dimen/dimen_32dp</item>
+        <item name="android:layout_marginStart">@dimen/dimen_8dp</item>
+    </style>
+
+    <style name="CastRecyclerViewStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <!--<item name="android:layout_height">@dimen/movie_detail_cast_recycler_width</item>-->
+        <item name="android:layout_marginEnd">@dimen/dimen_8dp</item>
+        <item name="android:layout_marginStart">@dimen/dimen_8dp</item>
+        <item name="android:layout_marginTop">@dimen/dimen_8dp</item>
+    </style>
+
+    <style name="AppTheme.Translucent" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <!--<item name=""-->
+    </style>
+
+    <style name="SplashScreenTextStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:textSize">@dimen/splashscreen_movie_app_name_text_size</item>
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
+    <style name="SplashScreenFeatureStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:textSize">@dimen/splash_screen_feature_text_size</item>
+        <item name="android:gravity">center_horizontal</item>
+    </style>
+
+</resources>

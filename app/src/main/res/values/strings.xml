@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="sort_by">Sort By</string>
+    <string name="movie_detail_synopsis">Synopsis: </string>
+    <string name="movie_detail_rating_label">Rating:</string>
+    <string name="movie_detail_release_date_label">Release Date:</string>
+    <string name="movie_detail_status_label">Status:</string>
+    <string name="light_theme">Light theme</string>
+    <string name="dark_theme">Dark theme</string>
+    <string name="change_theme">Change Theme</string>
+    <string name="sort_by_popularity">Popularity</string>
+    <string name="sort_by_highest_rating">Highest Rating</string>
+    <string name="movie_detail_cast">Cast</string>
+    <string name="crew_job_label">Job:</string>
+    <string name="crew_department_label">Department:</string>
+    <string name="cast_character_label">Character:</string>
+    <string name="cast_crew_gender_label">Gender:</string>
+    <string name="cast_crew_name_label">Name:</string>
+    <string name="splash_screen_popular_movies">POPULAR MOVIES!!</string>
+    <string name="splash_screen_discover_movies">DISCOVER MOVIES</string>
+    <string name="splash_screen_search_movies">SEARCH MOVIES</string>
+</resources>
