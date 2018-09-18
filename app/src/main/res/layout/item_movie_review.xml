@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/movie_detail_review_rootview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorAppBackgroundDark"
+        android:padding="@dimen/dimen_4dp">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/reviewer_image"
+            android:layout_width="@dimen/dimen_40dp"
+            android:layout_height="@dimen/dimen_40dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/ic_profile_user"
+            app:civ_border_color="@color/colorAccent"
+            app:civ_border_width="@dimen/dimen_2dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/reviewer_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="@dimen/dimen_8dp"
+            android:ellipsize="end"
+            android:fontFamily="cursive"
+            android:lines="1"
+            android:padding="@dimen/dimen_4dp"
+            android:textColor="@color/colorAccentDark"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/reviewer_image"
+            app:layout_constraintTop_toTopOf="@+id/reviewer_image"
+            tools:text="Jasper Essien" />
+
+        <com.example.android.popularmovies.utility.ExpandableTextView
+            android:id="@+id/review_content"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/dimen_8dp"
+            android:layout_marginStart="@dimen/dimen_8dp"
+            android:isScrollContainer="true"
+            android:maxLines="5"
+            android:padding="@dimen/dimen_4dp"
+            android:scrollbars="vertical"
+            android:textColor="@color/colorAccent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/reviewer_image"
+            app:layout_constraintTop_toBottomOf="@+id/reviewer_name"
+            tools:text="Nice Movie!!!!!!!!!" />
+
+        <!--TODO: contraint this view to parent bottom, then let the image be contrained to below it-->
+        <!--<View-->
+        <!--android:id="@+id/review_content_underline"-->
+        <!--style="@style/MovieLabelUnderlining"-->
+        <!--android:layout_marginTop="8dp"-->
+        <!--app:layout_constraintEnd_toEndOf="@+id/reviewer_name"-->
+        <!--app:layout_constraintHorizontal_bias="1.0"-->
+        <!--app:layout_constraintStart_toStartOf="@+id/reviewer_image"-->
+        <!--app:layout_constraintTop_toTopOf="parent" />-->
+
+
+    </android.support.constraint.ConstraintLayout>
+</layout>

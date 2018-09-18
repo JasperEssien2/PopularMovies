@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <RelativeLayout
+        android:id="@+id/movie_detail_trailer_item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorAppBackgroundDark"
+        android:padding="@dimen/dimen_4dp">
+
+        <ImageView
+            android:id="@+id/movie_detail_trailer_item_icon"
+            android:layout_width="@dimen/dimen_40dp"
+            android:layout_height="@dimen/dimen_40dp"
+            android:src="@drawable/ic_movie_play_dark"
+            app:srcCompat="@drawable/ic_movie_play_dark" />
+
+        <TextView
+            android:id="@+id/movie_detail_trailer_item_trailer_count"
+            style="@style/MovieDetailTextViewSubHeaderLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dimen_16dp"
+            android:layout_toEndOf="@id/movie_detail_trailer_item_icon"
+            android:gravity="center_vertical"
+            tools:text="Trailer 1" />
+
+    </RelativeLayout>
+</layout>
