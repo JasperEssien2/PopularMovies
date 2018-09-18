@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +30,8 @@ import com.example.android.popularmovies.Rest.ApiClient;
 import com.example.android.popularmovies.Rest.ApiInterface;
 import com.example.android.popularmovies.databinding.ActivityHomeBinding;
 import com.example.android.popularmovies.databinding.ItemMovieBinding;
+import com.example.android.popularmovies.databinding.ItemMovieReviewBinding;
+import com.example.android.popularmovies.utility.ExpandableTextView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -61,8 +62,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         this.mMovies = movies;
         mActivity = activity;
         mActivityHomeBinding = activityHomeBinding;
-//        mLoadingSnackbar =
-//                Snackbar.make(mActivityHomeBinding.activityHome, "Loading more.....", Snackbar.LENGTH_INDEFINITE);
     }
 
     public MovieAdapter() {
@@ -229,18 +228,23 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         ApiInterface apiService =
                 ApiClient.getClient().create(ApiInterface.class);
         Call<MovieResponse> call = apiService
-                .getMovieDetail(id, ApiConstant.API_KEY, ApiConstant.CREDITS);
+                .getMovieDetail(id, ApiConstant.API_KEY, ApiConstant.APPEND_ITEMS);
         call.enqueue(new retrofit2.Callback<MovieResponse>() {
             @Override
             public void onResponse(Call<MovieResponse> call, Response<MovieResponse> response) {
                 MovieResponse movieResponse = response.body();
                 if (movieResponse == null) return;
                 Movie.MovieCredits credit = movieResponse.getCredit();
+                Movie.MovieTrailers trailers = movieResponse.getTrailers();
+                List<Movie.MovieGenre> genres = movieResponse.getGenres();
+                Movie.MovieReviews reviews = movieResponse.getReviews();
+
                 if (pos < getItemCount()) {
                     mMovies.get(pos).setCasts(credit.getCasts());
-                    mMovies.get(pos).setMovieStatus(credit.getMovieStatus());
-                    //Log.e(TAG, "Status - ::::::::::::::::::" + mMovies.get(pos).getMovieStatus() + "::::::::::::::::::");
-                    //Log.e(TAG, "Credit Status - ::::::::::::::::::" + credit.getMovieStatus() + "::::::::::::::::::");
+                    mMovies.get(pos).setMovieStatus(movieResponse.getStatus());
+                    mMovies.get(pos).setReviews(reviews.getReviews());
+                    mMovies.get(pos).setTrailers(trailers.getTrailers());
+                    mMovies.get(pos).setGenres(genres);
                 }
             }
 
@@ -259,7 +263,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
             mSelectedItem.put(position, true);
             mMovies.get(position).setSelected(true);
         }
-        //setActivated(mItemMovieBinding, mSelectedItem.get(position, false));
         notifyDataSetChanged();
     }
 
@@ -300,7 +303,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     }
 
     private void setActivated(View itemView, int pos) {
-//        itemView.getRoot().setActivated(!isActivated);
         if (mMovies.get(pos).isSelected())
             itemView.findViewById(R.id.image_view_checked_indicator).setVisibility(View.VISIBLE);
         else itemView.findViewById(R.id.image_view_checked_indicator).setVisibility(View.GONE);
@@ -325,6 +327,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         void onAddToStarredList();
 
         void onCancelActionButton();
+
+        void onDeleteActionButton();
     }
 
     /**
@@ -350,7 +354,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         @NonNull
         @Override
         public MovieCastViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-//            circleImageView.setId(R.id.);
             return new MovieCastViewHolder(createImageLayout());
         }
 
@@ -360,14 +363,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
          * @return datatype CircleImageView
          */
         private CircleImageView createImageLayout() {
-//            FrameLayout frameLayout = new FrameLayout(mContext);
             RecyclerView.LayoutParams layoutParams = new RecyclerView.LayoutParams(
                     55, 55);
-            //frameLayout.setLayoutParams(layoutParams);
             layoutParams.setMargins(4, 2, 4, 2);
             CircleImageView circleImageView = new CircleImageView(mContext);
             circleImageView.setId(MOVIE_CAST_CIRCLE_IMAGE_ID);
-            Log.e(TAG, "Id ----- " + circleImageView.getId() + "------");
             circleImageView.setLayoutParams(layoutParams);
             circleImageView.setBorderColor(getColor(R.color.colorAccent));
             circleImageView.setCircleBackgroundColor(getColor(R.color.colorDarkGray));
@@ -415,9 +415,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
          */
         private void loadMovieImage(final MovieCastViewHolder holder, final String imageUrl) {
             //setProgressBarVisible(mMovieDetailLayoutBinding.movieDetailImageProgressBar);
-            Log.e(TAG, "****** ------ " + ApiConstant.POSTER_PATH_BASE_URL +
-                    ApiConstant.POSTER_PATH_SIZE + imageUrl + " ------ ********");
-            Log.e(TAG, "Id ----- " + holder.circleImageView.getId() + "------");
             Picasso
                     .get()
                     .load(ApiConstant.POSTER_PATH_BASE_URL +
@@ -431,7 +428,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
                         @Override
                         public void onError(Exception e) {
-                            Log.e(TAG, "Picsso Loading Errror ------------- " + e.getMessage() + "********* ");
                             Picasso
                                     .get()
                                     .load(ApiConstant.POSTER_PATH_BASE_URL +
@@ -444,7 +440,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
 
                                         @Override
                                         public void onError(Exception e) {
-                                            Log.e(TAG, "Picsso Loading Errror ------------- " + e.getMessage() + "********* ");
                                         }
                                     });
                         }
@@ -468,6 +463,84 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                         detailFrag.show(mFragmentManager, BundleConstants.MOVIE_CAST_CREW_DETAIL);
                     }
                 });
+            }
+        }
+    }
+
+    public static class MovieReviewsAdapter extends RecyclerView.Adapter<MovieReviewsAdapter.MovieReviewViewHolder> {
+        private List<Movie.MovieReview> reviews;
+        private boolean isDarkThemeSetting;
+        private Context context;
+        private ItemMovieReviewBinding itemMovieReviewBinding;
+
+        public MovieReviewsAdapter(List<Movie.MovieReview> reviews, boolean isDarkThemeSetting,
+                                   Context context) {
+
+            this.reviews = reviews;
+            this.isDarkThemeSetting = isDarkThemeSetting;
+            this.context = context;
+        }
+
+        @NonNull
+        @Override
+        public MovieReviewViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            itemMovieReviewBinding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                    R.layout.item_movie_review, parent, false);
+            return new MovieReviewViewHolder(itemMovieReviewBinding.getRoot());
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull MovieReviewViewHolder holder, int position) {
+            if (isDarkThemeSetting) itemDark(holder);
+            else itemLight(holder);
+
+            holder.reviewerName.setText(reviews.get(
+                    holder.getAdapterPosition()).getReviewerName());
+            holder.reviewContent.isDarkThemeSetting(isDarkThemeSetting);
+            holder.reviewContent.setText(reviews.get(
+                    holder.getAdapterPosition()).getReview().trim());
+
+        }
+
+        private void itemLight(MovieReviewViewHolder holder) {
+            holder.itemView.setBackgroundColor(getColor(R.color.colorAppBackgroundLight));
+            holder.reviewContent.setTextColor(getColor(R.color.colorDarkGray));
+            holder.reviewerName.setTextColor(getColor(R.color.colorDarkGray));
+        }
+
+        private void itemDark(MovieReviewViewHolder holder) {
+            holder.itemView.setBackgroundColor(getColor(R.color.colorAppBackgroundDark));
+            holder.reviewContent.setTextColor(getColor(R.color.colorAccent));
+            holder.reviewerName.setTextColor(getColor(R.color.colorAccentDark));
+        }
+
+        /**
+         * This method is responsible for returning an int color value
+         *
+         * @param resource the color resource given
+         * @return the color int value
+         */
+        private int getColor(@ColorRes int resource) {
+            return ContextCompat.getColor(context, resource);
+        }
+
+        @Override
+        public int getItemCount() {
+            return reviews.size();
+        }
+
+        public class MovieReviewViewHolder extends RecyclerView.ViewHolder {
+            private TextView reviewerName;
+            private ExpandableTextView reviewContent;
+
+            public MovieReviewViewHolder(View itemView) {
+                super(itemView);
+                initViews();
+            }
+
+            private void initViews() {
+                reviewerName = itemMovieReviewBinding.reviewerName;
+                reviewContent = itemMovieReviewBinding.reviewContent;
             }
         }
     }
@@ -501,7 +574,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                         bottomSheets.dismiss();
                 }
             });
-            //setActivated(mItemMovieBinding, mSelectedItem.get(getAdapterPosition(), false));
         }
 
         @Override
@@ -538,18 +610,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         private Bundle bottomSheetArgs() {
             if (getAdapterPosition() != -1) {
                 Movie movie = mMovies.get(getAdapterPosition());
-//                Log.e(TAG, "MovieCastCrew: ::::::::::::::::::" + mMovies.get(getAdapterPosition()).getCredit().toString() + "::::::::::::::::::");
                 Bundle args = new Bundle();
                 args.putParcelable(BundleConstants.MOVIE_DETAIL_TAG, movie);
                 return args;
             }
-//            args.putString(MOVIE_TITLE, movie.getOriginalTitle());
-//            args.putString(MOVIE_SYNOPSIS, movie.getPlotSynopsis());
-//            args.putString(MOVIE_IMAGE_URL, ApiConstant.POSTER_PATH_BASE_URL +
-//                    ApiConstant.POSTER_PATH_SIZE + movie.getMovieImageUrl());
-//            args.putString(MOVIE_STATUS, movie.getMovieStatus());
-//            args.putString(MOVIE_RELEASE_DATE, movie.getReleaseDate());
-//            args.putDouble(MOVIE_RATING, movie.getRating());
             return null;
         }
 

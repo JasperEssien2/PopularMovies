@@ -1,5 +1,8 @@
 package com.example.android.popularmovies.Model;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -7,8 +10,8 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
+@Entity
 public class Movie implements Parcelable {
-
 
     public static final Creator<Movie> CREATOR = new Creator<Movie>() {
         @Override
@@ -35,22 +38,37 @@ public class Movie implements Parcelable {
     private String movieStatus;
     @SerializedName("id")
     private int id;
+    //    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey(autoGenerate = true)
+    private int dataId;
     private boolean isSelected;
     //@SerializedName("cast")
+    @Ignore
     private List<MovieCastCrew> casts;
+    @Ignore
+    private List<MovieReview> reviews;
+    @Ignore
+    private List<MovieTrailer> trailers;
+    @Ignore
+    private List<MovieGenre> genres;
 
     public Movie(String originalTitle, String movieImageUrl, String plotSynopsis, double rating,
-                 String releaseDate, int id, List<MovieCastCrew> casts, boolean isSelected) {
+                 String releaseDate, int id, int dataId, List<MovieCastCrew> casts, boolean isSelected,
+                 String movieStatus, List<MovieReview> reviews, List<MovieTrailer> trailers, List<MovieGenre> genres) {
 
         this.originalTitle = originalTitle;
         this.movieImageUrl = movieImageUrl;
         this.plotSynopsis = plotSynopsis;
         this.rating = rating;
         this.releaseDate = releaseDate;
+        this.dataId = dataId;
         this.movieStatus = movieStatus;
         this.id = id;
         this.casts = casts;
         this.isSelected = isSelected;
+        this.reviews = reviews;
+        this.trailers = trailers;
+        this.genres = genres;
     }
 
     protected Movie(Parcel in) {
@@ -61,8 +79,12 @@ public class Movie implements Parcelable {
         releaseDate = in.readString();
         movieStatus = in.readString();
         id = in.readInt();
+        dataId = in.readInt();
         isSelected = in.readByte() != 0;
         casts = in.createTypedArrayList(MovieCastCrew.CREATOR);
+        reviews = in.createTypedArrayList(MovieReview.CREATOR);
+        trailers = in.createTypedArrayList(MovieTrailer.CREATOR);
+        genres = in.createTypedArrayList(MovieGenre.CREATOR);
     }
 
     public Movie() {
@@ -125,6 +147,14 @@ public class Movie implements Parcelable {
         this.id = id;
     }
 
+    public int getDataId() {
+        return dataId;
+    }
+
+    public void setDataId(int dataId) {
+        this.dataId = dataId;
+    }
+
     public List<MovieCastCrew> getCasts() {
         return casts;
     }
@@ -155,8 +185,36 @@ public class Movie implements Parcelable {
         parcel.writeString(releaseDate);
         parcel.writeString(movieStatus);
         parcel.writeInt(id);
+        parcel.writeInt(dataId);
         parcel.writeByte((byte) (isSelected ? 1 : 0));
         parcel.writeTypedList(casts);
+        parcel.writeTypedList(reviews);
+        parcel.writeTypedList(trailers);
+        parcel.writeTypedList(genres);
+    }
+
+    public List<MovieReview> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(List<MovieReview> reviews) {
+        this.reviews = reviews;
+    }
+
+    public List<MovieTrailer> getTrailers() {
+        return trailers;
+    }
+
+    public void setTrailers(List<MovieTrailer> trailers) {
+        this.trailers = trailers;
+    }
+
+    public List<MovieGenre> getGenres() {
+        return genres;
+    }
+
+    public void setGenres(List<MovieGenre> genres) {
+        this.genres = genres;
     }
 
     public static class MovieCredits implements Parcelable {
@@ -176,28 +234,16 @@ public class Movie implements Parcelable {
         private List<MovieCastCrew> crews;
         @SerializedName("cast")
         private List<MovieCastCrew> casts;
-        @SerializedName("status")
-        private String movieStatus;
 
-        public MovieCredits(List<MovieCastCrew> crews, List<MovieCastCrew> casts, String movieStatus) {
+        public MovieCredits(List<MovieCastCrew> crews, List<MovieCastCrew> casts) {
 
             this.crews = crews;
             this.casts = casts;
-            this.movieStatus = movieStatus;
         }
 
         protected MovieCredits(Parcel in) {
             crews = in.createTypedArrayList(MovieCastCrew.CREATOR);
             casts = in.createTypedArrayList(MovieCastCrew.CREATOR);
-            movieStatus = in.readString();
-        }
-
-        public String getMovieStatus() {
-            return movieStatus;
-        }
-
-        public void setMovieStatus(String movieStatus) {
-            this.movieStatus = movieStatus;
         }
 
         public List<MovieCastCrew> getCrews() {
@@ -225,13 +271,101 @@ public class Movie implements Parcelable {
         public void writeToParcel(Parcel parcel, int i) {
             parcel.writeTypedList(crews);
             parcel.writeTypedList(casts);
-            parcel.writeString(movieStatus);
         }
 
         @Override
         public String toString() {
             return "Cast: " + casts.toString() + "\n" +
                     "Crews: " + crews.toString() + "\n\n";
+        }
+    }
+
+    public static class MovieReviews implements Parcelable {
+        @SerializedName("results")
+        private List<MovieReview> reviews;
+
+        public MovieReviews(List<MovieReview> reviews) {
+
+            this.reviews = reviews;
+        }
+
+        protected MovieReviews(Parcel in) {
+            reviews = in.createTypedArrayList(MovieReview.CREATOR);
+        }
+
+        public static final Creator<MovieReviews> CREATOR = new Creator<MovieReviews>() {
+            @Override
+            public MovieReviews createFromParcel(Parcel in) {
+                return new MovieReviews(in);
+            }
+
+            @Override
+            public MovieReviews[] newArray(int size) {
+                return new MovieReviews[size];
+            }
+        };
+
+        public List<MovieReview> getReviews() {
+            return reviews;
+        }
+
+        public void setReviews(List<MovieReview> reviews) {
+            this.reviews = reviews;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel parcel, int i) {
+            parcel.writeTypedList(reviews);
+        }
+    }
+
+    public static class MovieTrailers implements Parcelable {
+
+        @SerializedName("results")
+        private List<MovieTrailer> trailers;
+
+        public MovieTrailers(List<MovieTrailer> trailers) {
+
+            this.trailers = trailers;
+        }
+
+        protected MovieTrailers(Parcel in) {
+            trailers = in.createTypedArrayList(MovieTrailer.CREATOR);
+        }
+
+        public static final Creator<MovieTrailers> CREATOR = new Creator<MovieTrailers>() {
+            @Override
+            public MovieTrailers createFromParcel(Parcel in) {
+                return new MovieTrailers(in);
+            }
+
+            @Override
+            public MovieTrailers[] newArray(int size) {
+                return new MovieTrailers[size];
+            }
+        };
+
+        public List<MovieTrailer> getTrailers() {
+            return trailers;
+        }
+
+        public void setTrailers(List<MovieTrailer> trailers) {
+            this.trailers = trailers;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel parcel, int i) {
+            parcel.writeTypedList(trailers);
         }
     }
 
@@ -344,25 +478,144 @@ public class Movie implements Parcelable {
         }
     }
 
-    public static class MovieGenre{
+    public static class MovieGenre implements Parcelable {
 
-        private List<String> genres;
+        @SerializedName("name")
+        private String genre;
 
-        public MovieGenre(){
+        public MovieGenre(String genre) {
 
+            this.genre = genre;
         }
 
-        public MovieGenre(List<String> genres){
-
-            this.genres = genres;
+        protected MovieGenre(Parcel in) {
+            genre = in.readString();
         }
 
-        public List<String> getGenres() {
-            return genres;
+        public static final Creator<MovieGenre> CREATOR = new Creator<MovieGenre>() {
+            @Override
+            public MovieGenre createFromParcel(Parcel in) {
+                return new MovieGenre(in);
+            }
+
+            @Override
+            public MovieGenre[] newArray(int size) {
+                return new MovieGenre[size];
+            }
+        };
+
+        public String getGenre() {
+            return genre;
         }
 
-        public void setGenres(List<String> genres) {
-            this.genres = genres;
+        public void setGenre(String genre) {
+            this.genre = genre;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel parcel, int i) {
+            parcel.writeString(genre);
+        }
+    }
+
+    public static class MovieTrailer implements Parcelable {
+        @SerializedName("key")
+        private String trailerLink;
+
+        public MovieTrailer(String trailerLink) {
+
+            this.trailerLink = trailerLink;
+        }
+
+        protected MovieTrailer(Parcel in) {
+            trailerLink = in.readString();
+        }
+
+        public static final Creator<MovieTrailer> CREATOR = new Creator<MovieTrailer>() {
+            @Override
+            public MovieTrailer createFromParcel(Parcel in) {
+                return new MovieTrailer(in);
+            }
+
+            @Override
+            public MovieTrailer[] newArray(int size) {
+                return new MovieTrailer[size];
+            }
+        };
+
+        public String getTrailerLink() {
+            return trailerLink;
+        }
+
+        public void setTrailerLink(String trailerLink) {
+            this.trailerLink = trailerLink;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel parcel, int i) {
+            parcel.writeString(trailerLink);
+        }
+    }
+
+    public static class MovieReview implements Parcelable {
+        @SerializedName("author")
+        private String reviewerName;
+
+        @SerializedName("content")
+        private String review;
+
+        protected MovieReview(Parcel in) {
+            reviewerName = in.readString();
+            review = in.readString();
+        }
+
+        public static final Creator<MovieReview> CREATOR = new Creator<MovieReview>() {
+            @Override
+            public MovieReview createFromParcel(Parcel in) {
+                return new MovieReview(in);
+            }
+
+            @Override
+            public MovieReview[] newArray(int size) {
+                return new MovieReview[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel parcel, int i) {
+            parcel.writeString(reviewerName);
+            parcel.writeString(review);
+        }
+
+        public String getReviewerName() {
+            return reviewerName;
+        }
+
+        public void setReviewerName(String reviewerName) {
+            this.reviewerName = reviewerName;
+        }
+
+        public String getReview() {
+            return review;
+        }
+
+        public void setReview(String review) {
+            this.review = review;
         }
     }
 

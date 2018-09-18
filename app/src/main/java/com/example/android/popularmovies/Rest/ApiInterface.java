@@ -28,5 +28,5 @@ public interface ApiInterface {
     @GET(ApiConstant.MOVIE_BY_ID)
     Call<MovieResponse> getMovieDetail(@Path(ApiConstant.ID_PLACE_HOLDER_KEY) int id,
                                        @Query(ApiConstant.API_KEY_LABEL) String apiKey,
-                                       @Query(ApiConstant.APPEND_TO_RESPONSE) String credits);
+                                       @Query(ApiConstant.APPEND_TO_RESPONSE) String append_items);
 }

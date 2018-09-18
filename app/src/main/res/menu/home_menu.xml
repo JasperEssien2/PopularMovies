@@ -27,6 +27,11 @@
                     android:id="@+id/action_sort_by_rating"
                     android:orderInCategory="18"
                     android:title="@string/sort_by_highest_rating" />
+
+                <item
+                    android:id="@+id/action_sort_by_favourite"
+                    android:orderInCategory="19"
+                    android:title="@string/home_menu_favourites_label" />
             </group>
         </menu>
     </item>

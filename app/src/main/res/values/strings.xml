@@ -19,4 +19,8 @@
     <string name="splash_screen_popular_movies">POPULAR MOVIES!!</string>
     <string name="splash_screen_discover_movies">DISCOVER MOVIES</string>
     <string name="splash_screen_search_movies">SEARCH MOVIES</string>
+    <string name="movie_detail_trailers_labels">Trailers:</string>
+    <string name="movie_detail_reviews_label">Reviews:</string>
+    <string name="movie_detail_genres_label">Genres:</string>
+    <string name="home_menu_favourites_label">Favourites</string>
 </resources>

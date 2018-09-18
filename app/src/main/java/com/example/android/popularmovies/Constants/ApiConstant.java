@@ -2,7 +2,7 @@ package com.example.android.popularmovies.Constants;
 
 public class ApiConstant {
 
-    public static final String API_KEY = "";
+    public static final String API_KEY = "9ee30874cd8bda9d9e9bdc13fe1a4ebb";
     public static final String API_KEY_LABEL = "api_key";
 
     public static final String BASE_URL = "https://api.themoviedb.org/3/";
@@ -12,7 +12,7 @@ public class ApiConstant {
     public static final String PAGE_KEY = "page";
 
     public static final String APPEND_TO_RESPONSE = "append_to_response";
-    public static final String CREDITS = "credits";
+    public static final String APPEND_ITEMS = "credits,videos,reviews";
 
     public static final String QUERY = "query";
     public static final String SEARCH_MOVIE = "search/movie";
@@ -26,5 +26,8 @@ public class ApiConstant {
     public static final String MOVIE_BY_ID = "movie/{id}";
 
     public static final String ID_PLACE_HOLDER_KEY = "id";
+
+    public static final String YOUTUBE_APP_URI = "vnd.youtube:";
+    public static final String YOUTUBE_BROWSER_URI = "http://www.youtube.com/watch?v=";
 
 }

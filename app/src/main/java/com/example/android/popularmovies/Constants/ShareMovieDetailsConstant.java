@@ -14,5 +14,9 @@ public class ShareMovieDetailsConstant {
 
     public static final String MOVIE_STATUS = "MovieStatus: ";
 
+    public static final String GENRES = "Genres: ";
+
+    public static final String TRAILER = "Trailer: ";
+
     //public static final String MOVIE
 }

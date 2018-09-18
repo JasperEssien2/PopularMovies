@@ -1,8 +1,7 @@
-package com.example.android.popularmovies.Rest;
+package com.example.android.popularmovies.utility;
 
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 
 public abstract class CustomScrollListener extends RecyclerView.OnScrollListener {
 
@@ -19,8 +18,7 @@ public abstract class CustomScrollListener extends RecyclerView.OnScrollListener
         int visibleItemCount = mGridLayoutManager.getChildCount();
         int totalItemCount = mGridLayoutManager.getItemCount();
         int firstVisibleItemPosition = mGridLayoutManager.findFirstVisibleItemPosition();
-        Log.e(TAG, "******* onScrolled ******** ");
-        //if()
+
         if (!isLoading() && !isLastPage()) {
             if ((visibleItemCount + firstVisibleItemPosition) >=
                     totalItemCount && firstVisibleItemPosition >= 0) {

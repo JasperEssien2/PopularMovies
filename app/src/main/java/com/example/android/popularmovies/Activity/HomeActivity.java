@@ -1,6 +1,9 @@
 package com.example.android.popularmovies.Activity;
 
 import android.app.SearchManager;
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +15,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.ColorRes;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -26,36 +30,34 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.popularmovies.Adapter.MovieAdapter;
 import com.example.android.popularmovies.Constants.ApiConstant;
 import com.example.android.popularmovies.Constants.BundleConstants;
 import com.example.android.popularmovies.Fragments.MovieDetailBottomSheets;
+import com.example.android.popularmovies.Interfaces.DatabaseCallbacks;
 import com.example.android.popularmovies.Model.Movie;
-import com.example.android.popularmovies.Model.MovieResponse;
+import com.example.android.popularmovies.Model.MovieViewModel;
 import com.example.android.popularmovies.R;
-import com.example.android.popularmovies.Rest.ApiClient;
-import com.example.android.popularmovies.Rest.ApiInterface;
-import com.example.android.popularmovies.Rest.CustomScrollListener;
+import com.example.android.popularmovies.utility.CustomScrollListener;
 import com.example.android.popularmovies.SettingsSharedPreference;
 import com.example.android.popularmovies.databinding.ActivityHomeBinding;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
+import static com.example.android.popularmovies.Constants.ShareMovieDetailsConstant.GENRES;
 import static com.example.android.popularmovies.Constants.ShareMovieDetailsConstant.MOVIE_IMAGE_URL;
 import static com.example.android.popularmovies.Constants.ShareMovieDetailsConstant.MOVIE_RATING;
 import static com.example.android.popularmovies.Constants.ShareMovieDetailsConstant.MOVIE_RELEASE_DATE;
 import static com.example.android.popularmovies.Constants.ShareMovieDetailsConstant.MOVIE_STATUS;
 import static com.example.android.popularmovies.Constants.ShareMovieDetailsConstant.MOVIE_SYNOPSIS;
 import static com.example.android.popularmovies.Constants.ShareMovieDetailsConstant.MOVIE_TITLE;
+import static com.example.android.popularmovies.Constants.ShareMovieDetailsConstant.TRAILER;
 
 public class HomeActivity extends AppCompatActivity
-        implements MovieAdapter.ListMovieActionModeViewCallbacks {
+        implements MovieAdapter.ListMovieActionModeViewCallbacks, DatabaseCallbacks {
 
     private static final String TAG = HomeActivity.class.getSimpleName();
     private static final int NUM_OF_COLUMNS_PORTRAIT_ORIENTATION = 3;
@@ -82,6 +84,11 @@ public class HomeActivity extends AppCompatActivity
     private boolean isQueryTypeSearch = false;
     private SearchView searchView;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private MovieViewModel mMovieViewModel;
+    private boolean isFavouriteButtonClicked = false;
+    private int disconnectedCount = 0;
+    private LiveData<List<Movie>> fromDatabase, fromApi;
+    private Observer<List<Movie>> observerApi, observerDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,10 +96,15 @@ public class HomeActivity extends AppCompatActivity
         mActivityHomeBinding = DataBindingUtil
                 .setContentView(this, R.layout.activity_home);
         SettingsSharedPreference.initSettingsSharedPrefernce(this);
+        mMovieViewModel = ViewModelProviders
+                .of(this)
+                .get(MovieViewModel.class);
+        mMovieViewModel.setDatabaseCallbacks(this);
         setUpUi(savedInstanceState);
-        mLoadingSnackBar =
-                Snackbar.make(mActivityHomeBinding.activityHome, "Loading more.....", Snackbar.LENGTH_INDEFINITE);
-        setUpSnackBarTheme(mLoadingSnackBar);
+        if (!SettingsSharedPreference.getSortBySettings()
+                .equals(SettingsSharedPreference.SORT_BY_SETTINGS_FAVOURITES))
+            observeMovieLiveData();
+        else onShowFavouriteFabClicked();
         networkReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -105,12 +117,16 @@ public class HomeActivity extends AppCompatActivity
                             connectivityManager.getActiveNetworkInfo();
                     if (networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTED) {
                         //Connected
-                        onConnected();
+                        if (disconnectedCount > 0) { //This if statement makes sure its only when a disconnection have occurred
+                            onConnected();          //and its connected back that onConnected() is called to avoid calling Api multiple times
+                            Log.e(TAG, " ++++++ IS_CONNECTED ++++++++++  ");
+                        }
                     } else if (networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTING) {
                         //Connecting
                         onConnecting();
                     } else {
                         //No connection
+                        disconnectedCount++;
                         onDisconnected();
                     }
                 }
@@ -164,6 +180,7 @@ public class HomeActivity extends AppCompatActivity
                 searchView.clearFocus();
                 mQueryText = query;
                 isQueryTypeSearch = true;
+                setObserverApi();
                 loadFirstItems(null, QUERY_TYPE_SEARCH, query);
                 return true;
             }
@@ -183,12 +200,13 @@ public class HomeActivity extends AppCompatActivity
      * @param menu menu to check
      */
     private void updateOptionItemSortBy(Menu menu) {
-        int group = 1, popularity = 0, rating = 1;
+        int group = 1, popularity = 0, rating = 1, favourite = 2;
 
         if (SettingsSharedPreference.getSortBySettings().equals(
                 SettingsSharedPreference.SORT_BY_SETTINGS_POPULARITY)) {
             menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(popularity).setChecked(true);
             menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(rating).setChecked(false);
+            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(favourite).setChecked(false);
             Log.e(TAG, menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(popularity).setChecked(true).toString() +
                     "--- Popularity setting");
         }
@@ -197,7 +215,17 @@ public class HomeActivity extends AppCompatActivity
             Log.e(TAG, menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(rating).setChecked(true).toString() +
                     "--- Rating setting");
             menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(popularity).setChecked(false);
+            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(favourite).setChecked(false);
             menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(rating).setChecked(true);
+        }
+
+        if (SettingsSharedPreference.getSortBySettings().equals(
+                SettingsSharedPreference.SORT_BY_SETTINGS_FAVOURITES)) {
+            Log.e(TAG, menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(favourite).setChecked(true).toString() +
+                    "--- Favourite setting");
+            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(popularity).setChecked(false);
+            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(favourite).setChecked(true);
+            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(rating).setChecked(false);
         }
     }
 
@@ -245,6 +273,8 @@ public class HomeActivity extends AppCompatActivity
                 SettingsSharedPreference.setSortBySettings(ApiConstant.SORT_MOST_POPULAR);
                 isQueryTypeSearch = false;
                 searchView.clearFocus();
+                setObserverApi();
+                isFavouriteButtonClicked = true;
                 loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_DISCOVER, null);
                 break;
             case R.id.action_sort_by_rating:
@@ -252,7 +282,19 @@ public class HomeActivity extends AppCompatActivity
                 isQueryTypeSearch = false;
                 searchView.clearFocus();
                 SettingsSharedPreference.setSortBySettings(ApiConstant.SORT_HIGHEST_RATED);
+                setObserverApi();
+                isFavouriteButtonClicked = true;
                 loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_DISCOVER, null);
+                break;
+            case R.id.action_sort_by_favourite:
+                item.setChecked(!item.isChecked());
+                isQueryTypeSearch = false;
+                searchView.clearFocus();
+                SettingsSharedPreference.setSortBySettings(SettingsSharedPreference.SORT_BY_SETTINGS_FAVOURITES);
+                //setObserverApi();
+                isFavouriteButtonClicked = true;
+                onShowFavouriteFabClicked();
+                //loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_DISCOVER, null);
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -314,11 +356,47 @@ public class HomeActivity extends AppCompatActivity
     }
 
     @Override
+    public void itemDeletedSuccessfully() {
+        Toast.makeText(this, "Item Deleted", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void itemInsertedSuccessfully() {
+        Toast.makeText(this, "Added to Favourites", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void itemAlreadyExistInDatabase(boolean addItem, boolean isBottomSheet, boolean doItemExist) {
+        MovieDetailBottomSheets bottomSheets = movieFragment();
+        if (addItem) ;
+            //Toast.makeText(this, "Already added", Toast.LENGTH_SHORT).show();
+            //mMovieViewModel.deleteItem();
+        else {
+            if (isBottomSheet) {
+                if (bottomSheets != null) {
+                    bottomSheets.updateFab(doItemExist);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void allItemSuccessfulyInserted() {
+
+    }
+
+    @Override
+    public void dismissLoadingSnackbar() {
+        if (mLoadingSnackBar != null)
+            mLoadingSnackBar.dismiss();
+    }
+
+    @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         if (savedInstanceState != null) {
             restoreItemSelectedState(savedInstanceState);
-            //restorePageNumber(savedInstanceState);
+            restorePageNumber(savedInstanceState);
 //            restoreQueryType(savedInstanceState);
 //            restoreQueryText(savedInstanceState);
         }
@@ -371,6 +449,64 @@ public class HomeActivity extends AppCompatActivity
     }
 
     /**
+     * This method is responsible for observing changes made to the list, updating the neccessay Ui
+     * according to the change in data
+     */
+    private void observeMovieLiveData() {
+        mActivityHomeBinding.moviesLoadingProgressbar.setVisibility(View.VISIBLE);
+        int queryType = 0;
+        if (isQueryTypeSearch)
+            queryType = QUERY_TYPE_SEARCH;
+        else
+            queryType = QUERY_TYPE_DISCOVER;
+        fromApi =
+                mMovieViewModel
+                        .getMovieListLiveData(SettingsSharedPreference.getSortBySettings(), queryType, mQueryText);
+        observerApi = new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(@Nullable List<Movie> movies) {
+                mActivityHomeBinding.moviesLoadingProgressbar.setVisibility(View.GONE);
+                swipeRefreshLayout.setRefreshing(false);
+                totalPageNumber = mMovieViewModel.getTotalPageNumber();
+                if (!mMovieViewModel.isQuerySuccessful()) pageNumber--;
+                if (movies == null) {
+                    showEmptyState();
+                    return;
+                }
+
+                if (movies.isEmpty()) {
+                    showEmptyState();
+                    return; //TODO: Show empty state view
+                }
+                if (pageNumber == PAGE_START) {
+                    mMovieAdapter.clearList();
+                    mMovieAdapter.addMovieList(movies);
+                } else {
+                    isLoading = false;
+                    mLoadingSnackBar.dismiss();
+                    Log.e(TAG, "FormerListSize: -- " + mMovieViewModel.getFormerListSize() + " ------- ");
+                    if (mMovieViewModel.getFormerListSize() < movies.size()) //TODO: Test the usefulness of this line of code
+                        mMovieAdapter.addMovieList(movies.subList(mMovieViewModel.getFormerListSize(),
+                                movies.size()));
+                }
+                if (pageNumber <= totalPageNumber) mMovieAdapter.updateIsLoadingTrue();
+                else isLastPage = true;
+            }
+        };
+        fromApi.observe(this, observerApi);
+    }
+
+    /**
+     * Sets the observer for movie items livedata gotten from Api, while it removes the observer
+     * of movie list gotten from the database
+     */
+    private void setObserverApi() {
+        if (observerDatabase != null)
+            fromDatabase.removeObserver(observerDatabase);
+        observeMovieLiveData();
+    }
+
+    /**
      * This method is responsible for setting up the UI of HomeActivty
      *
      * @param savedInstanceState
@@ -385,11 +521,43 @@ public class HomeActivity extends AppCompatActivity
         setUpOnSwipeAction();
         mNetworkStatusSnackbar = Snackbar.make(mActivityHomeBinding.getRoot(), "", Snackbar.LENGTH_INDEFINITE);
         mActivityHomeBinding.starFab.bringToFront();
+        mActivityHomeBinding.starFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onShowFavouriteFabClicked();
+                isFavouriteButtonClicked = true;
+            }
+        });
         setUpSnackBarTheme(mNetworkStatusSnackbar);
-        if (isQueryTypeSearch)
-            loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_SEARCH, mQueryText);
-        else
-            loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_DISCOVER, mQueryText);
+        mLoadingSnackBar =
+                Snackbar.make(mActivityHomeBinding.activityHome, "Loading more.....", Snackbar.LENGTH_INDEFINITE);
+        setUpSnackBarTheme(mLoadingSnackBar);
+    }
+
+    /**
+     * This methods define the action that takes place when show favourites fab clicked
+     */
+    private void onShowFavouriteFabClicked() {
+        observerDatabase = new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(@Nullable List<Movie> movies) {
+                if (movies == null) return;
+                if (movies.isEmpty()) {
+                    showEmptyState();
+                    return;
+                }
+                mMovieAdapter.clearList();
+                mMovieAdapter.addMovieList(movies);
+            }
+        };
+        mMovieAdapter.clearList();
+        fromDatabase =
+                mMovieViewModel.getMoviesFromDatabase();
+        if (fromApi != null)
+            fromApi.removeObserver(observerApi);
+
+        fromDatabase
+                .observe(this, observerDatabase);
     }
 
     /**
@@ -408,7 +576,6 @@ public class HomeActivity extends AppCompatActivity
      */
     private void setUpRecyclerView() {
         mGridLayoutManager = checkConfiguration();
-        //mGridLayoutManager.layoutDecoratedWithMargins();
         mMovieRecyclerView = mActivityHomeBinding.movieRecycler;
         mMovieAdapter = new MovieAdapter(new ArrayList<Movie>(), this, mActivityHomeBinding);
         mMovieAdapter.setActionListSelected(this);
@@ -419,15 +586,18 @@ public class HomeActivity extends AppCompatActivity
             @Override
             public void loadMoreItems() {
                 //If current list in adapter is less than 20.. no need showing loading snack bar
+//                if (!isFavouriteButtonClicked) {
                 if (mMovieAdapter.getItemCount() >= 20)
                     isLoading = true;
                 else isLoading = false;
                 pageNumber++;
                 mLoadingSnackBar.show();
+                if (mMovieAdapter.getItemCount() <= 20) mLoadingSnackBar.dismiss();
                 if (isQueryTypeSearch)
                     loadNextItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_SEARCH, mQueryText);
                 else
                     loadNextItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_DISCOVER, mQueryText);
+                //              }
             }
 
             @Override
@@ -445,7 +615,6 @@ public class HomeActivity extends AppCompatActivity
                 return isLoading;
             }
         });
-        loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_DISCOVER, mQueryText);
     }
 
     /**
@@ -457,12 +626,14 @@ public class HomeActivity extends AppCompatActivity
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (isQueryTypeSearch)
-                    loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_SEARCH,
-                            mQueryText);
-                else
-                    loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_DISCOVER,
-                            mQueryText);
+                if (!isFavouriteButtonClicked) {
+                    if (isQueryTypeSearch)
+                        loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_SEARCH,
+                                mQueryText);
+                    else
+                        loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_DISCOVER,
+                                mQueryText);
+                } else swipeRefreshLayout.setRefreshing(false);
             }
         });
     }
@@ -471,58 +642,16 @@ public class HomeActivity extends AppCompatActivity
      * This method takes care of getting the list of movies from the API
      */
     private void loadFirstItems(String sortBy, int queryType, String query) {
+        //isFavouriteButtonClicked = false;
         mMovieAdapter.updateIsLoadingFalse();
         hideEmptyState();
         mActivityHomeBinding.moviesLoadingProgressbar.setVisibility(View.VISIBLE);
-        ApiInterface apiService =
-                ApiClient.getClient().create(ApiInterface.class);
-        Call<MovieResponse> call = null;
+        mMovieViewModel.getFirstItemMoviesFromApi(sortBy, queryType, query);
         pageNumber = PAGE_START;
         if (queryType == QUERY_TYPE_SEARCH) {
-            call = apiService.getMovies(
-                    ApiConstant.API_KEY,
-                    query, PAGE_START, QUERY_TYPE_SEARCH);
         } else {
             isQueryTypeSearch = false;
-            if (sortBy.equals(SettingsSharedPreference.SORT_BY_SETTINGS_POPULARITY)) {
-                call = apiService.getPopularMovies(ApiConstant.API_KEY,
-                        PAGE_START);
-            } else if (sortBy.equals(SettingsSharedPreference.SORT_BY_SETTINGS_RATING)) {
-                call = apiService.getTopRatedMovies(ApiConstant.API_KEY,
-                        PAGE_START);
-            }
         }
-        if (call == null) return;
-        call.enqueue(new Callback<MovieResponse>() {
-            @Override
-            public void onResponse(Call<MovieResponse> call, Response<MovieResponse> response) {
-                mActivityHomeBinding.moviesLoadingProgressbar.setVisibility(View.GONE);
-                swipeRefreshLayout.setRefreshing(false);
-                MovieResponse movieResponse = response.body();
-                if (movieResponse == null) return;
-                totalPageNumber = movieResponse.getTotalPages();
-
-                List<Movie> movies = movieResponse.getResults();
-                if (movies != null)
-                    if (movies.isEmpty()) {
-                        showEmptyState();
-                        return; //TODO: Show empty state view
-                    }
-                mMovieAdapter.clearList();
-                mMovieAdapter.addMovieList(movies);
-                if (pageNumber <= totalPageNumber) mMovieAdapter.updateIsLoadingTrue();
-                else isLastPage = true;
-                //mMovieAdapter.setResponseUrl(call.request().url().toString());
-                if (movies == null) showEmptyState();//TODO: Show empty state view
-            }
-
-            @Override
-            public void onFailure(Call<MovieResponse> call, Throwable t) {
-                mActivityHomeBinding.moviesLoadingProgressbar.setVisibility(View.GONE);
-                swipeRefreshLayout.setRefreshing(false);
-                t.printStackTrace();
-            }
-        });
     }
 
     /**
@@ -533,56 +662,17 @@ public class HomeActivity extends AppCompatActivity
      * @param query     query string
      */
     private void loadNextItems(String sortBy, int queryType, String query) {
-        //mActivityHomeBinding.moviesLoadingProgressbar.setVisibility(View.VISIBLE);
+        //isFavouriteButtonClicked = false;
         mMovieAdapter.updateIsLoadingFalse();
         hideEmptyState();
-        ApiInterface apiService =
-                ApiClient.getClient().create(ApiInterface.class);
-        Call<MovieResponse> call = null;
+        mMovieViewModel.getNextMovieItemsFromApi(sortBy, queryType, query, pageNumber);
+
         if (queryType == QUERY_TYPE_SEARCH) {
-            call = apiService.getMovies(
-                    ApiConstant.API_KEY,
-                    query, pageNumber, QUERY_TYPE_SEARCH);
         } else {
             if (sortBy.equals(SettingsSharedPreference.SORT_BY_SETTINGS_POPULARITY)) {
-                call = apiService.getPopularMovies(ApiConstant.API_KEY,
-                        pageNumber);
             } else if (sortBy.equals(SettingsSharedPreference.SORT_BY_SETTINGS_RATING)) {
-                call = apiService.getTopRatedMovies(ApiConstant.API_KEY,
-                        pageNumber);
             }
         }
-        if (call == null) return;
-        call.enqueue(new Callback<MovieResponse>() {
-            @Override
-            public void onResponse(Call<MovieResponse> call, Response<MovieResponse> response) {
-                //mActivityHomeBinding.moviesLoadingProgressbar.setVisibility(View.GONE);
-                MovieResponse movieResponse = response.body();
-                if (movieResponse == null) return;
-                totalPageNumber = movieResponse.getTotalPages();
-
-                List<Movie> movies = movieResponse.getResults();
-                if (movies != null)
-                    if (movies.isEmpty()) {
-                        showEmptyState();
-                        return; //TODO: Show empty state view
-                    }
-                //mMovieAdapter.clearList();
-                isLoading = false;
-                mLoadingSnackBar.dismiss();
-                mMovieAdapter.addMovieList(movies);
-                if (pageNumber != totalPageNumber) mMovieAdapter.updateIsLoadingTrue();
-                else isLastPage = true;
-                //mMovieAdapter.setResponseUrl(call.request().url().toString());
-                if (movies == null) ;//TODO: Show empty state view
-            }
-
-            @Override
-            public void onFailure(Call<MovieResponse> call, Throwable t) {
-                mActivityHomeBinding.moviesLoadingProgressbar.setVisibility(View.GONE);
-                t.printStackTrace();
-            }
-        });
     }
 
     /**
@@ -670,6 +760,14 @@ public class HomeActivity extends AppCompatActivity
     @Override
     public void onAddToStarredList() {
         //TODO: WILL BE IMPLEMENTED NEXT STAGE OF THE APP
+        addToStarredItems();
+        mMovieAdapter.clearSelections();
+    }
+
+    @Override
+    public void onDeleteActionButton() {
+        deleteStarredItems();
+        mMovieAdapter.clearSelections();
     }
 
     @Override
@@ -705,6 +803,25 @@ public class HomeActivity extends AppCompatActivity
     }
 
     /**
+     * This method is responsible for adding movie item to the database
+     */
+    private void addToStarredItems() {
+        for (Movie movie : mMovieAdapter.getSelectedItems())
+            mMovieViewModel.isMovieInDatabase(movie, true, false);
+    }
+
+    /**
+     * This method is responsible for deleting selected movies from database
+     */
+    private void deleteStarredItems() {
+        Log.e(TAG, "SelectedItems: _______ " + mMovieAdapter.getSelectedItems() + " ___________");
+        for (Movie movie : mMovieAdapter.getSelectedItems()) {
+            mMovieViewModel.deleteItem(movie);
+            Log.e(TAG, "Deleted --- " + movie.getOriginalTitle() + " -------");
+        }
+    }
+
+    /**
      * This method helps to format the movie details
      *
      * @param movie the selected movie
@@ -717,7 +834,24 @@ public class HomeActivity extends AppCompatActivity
                 MOVIE_SYNOPSIS + movie.getPlotSynopsis() + "\n" +
                 MOVIE_RATING + movie.getRating() + "\n" +
                 MOVIE_RELEASE_DATE + movie.getReleaseDate() + "\n" +
-                MOVIE_STATUS + movie.getMovieStatus() + "\n\n";
+                MOVIE_STATUS + movie.getMovieStatus() + "\n" +
+                GENRES + getGenres(movie.getGenres()) + "\n" +
+                TRAILER + ApiConstant.YOUTUBE_BROWSER_URI + movie.getTrailers()
+                .get(0).getTrailerLink() + "\n\n";
+    }
+
+    private String getGenres(List<Movie.MovieGenre> genres) {
+        StringBuilder stringBuilder = new StringBuilder();
+        int count = 0;
+        for (Movie.MovieGenre movieGenre : genres) {
+            if (count != genres.size() - 1)
+                stringBuilder.append(movieGenre.getGenre() + ", ");
+            else if (count == genres.size() - 1)
+                stringBuilder.append(movieGenre.getGenre() + ".");
+
+            count++;
+        }
+        return stringBuilder.toString();
     }
 
     /**
@@ -801,6 +935,14 @@ public class HomeActivity extends AppCompatActivity
                     actionModeViewCallbacks.onAddToStarredList();
                     mode.finish();
                     return true;
+                case R.id.action_delete:
+                    Log.e(TAG, "IsFavouriteFabCLicked:   " + isFavouriteButtonClicked + " }}");
+                    if (isFavouriteButtonClicked) { //This if statement is meant to ensure that only
+                        actionModeViewCallbacks    // when favourite items are shown then the user can delete
+                                .onDeleteActionButton();
+                        mode.finish();
+                        return true;
+                    }
                 case R.id.action_close:
                     actionModeViewCallbacks.onCancelActionButton();
                     mode.finish();

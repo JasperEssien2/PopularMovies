@@ -178,12 +178,13 @@
                         <TextView
                             android:id="@+id/movie_detail_cast_label"
                             style="@style/MovieDetailTextViewSubHeaderLabel"
-                            android:layout_marginTop="@dimen/dimen_8dp"
+                            android:layout_marginEnd="@dimen/dimen_8dp"
                             android:padding="@dimen/dimen_4dp"
                             android:text="@string/movie_detail_cast"
                             app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="@+id/movie_detail_status"
-                            app:layout_constraintTop_toBottomOf="@+id/movie_detail_status" />
+                            app:layout_constraintHorizontal_bias="1.0"
+                            app:layout_constraintStart_toStartOf="@+id/movie_detail_trailers_label"
+                            app:layout_constraintTop_toBottomOf="@+id/movie_detail_reviews_tv_parent" />
 
                         <View
                             android:id="@+id/movie_detail_cast_underline_view"
@@ -191,6 +192,100 @@
                             app:layout_constraintEnd_toEndOf="@+id/movie_detail_cast_label"
                             app:layout_constraintStart_toStartOf="@+id/movie_detail_cast_label"
                             app:layout_constraintTop_toBottomOf="@+id/movie_detail_cast_label" />
+
+                        <TextView
+                            android:id="@+id/movie_detail_genre_label"
+                            style="@style/MovieDetailTextViewSubHeaderLabel"
+                            android:layout_marginTop="@dimen/dimen_8dp"
+                            android:text="@string/movie_detail_genres_label"
+                            app:layout_constraintEnd_toEndOf="@+id/movie_detail_status_tv"
+                            app:layout_constraintStart_toStartOf="@+id/movie_detail_status"
+                            app:layout_constraintTop_toBottomOf="@+id/movie_detail_status" />
+
+                        <View
+                            android:id="@+id/movie_detail_genre_underline_view"
+                            style="@style/MovieLabelUnderlining"
+                            app:layout_constraintEnd_toEndOf="@+id/movie_detail_genre_label"
+                            app:layout_constraintStart_toStartOf="@+id/movie_detail_genre_label"
+                            app:layout_constraintTop_toBottomOf="@+id/movie_detail_genre_label" />
+
+                        <ScrollView
+                            android:id="@+id/movie_detail_genre_parent"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="@dimen/dimen_8dp"
+                            app:layout_constraintStart_toStartOf="@+id/movie_detail_genre_label"
+                            app:layout_constraintTop_toBottomOf="@+id/movie_detail_genre_label">
+
+                            <LinearLayout
+                                android:id="@+id/movie_detail_genre_linear"
+                                android:orientation="horizontal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+
+                            </LinearLayout>
+                        </ScrollView>
+
+
+                        <TextView
+                            android:id="@+id/movie_detail_trailers_label"
+                            style="@style/MovieDetailTextViewSubHeaderLabel"
+                            android:layout_height="36dp"
+                            android:layout_marginTop="@dimen/dimen_8dp"
+                            android:text="@string/movie_detail_trailers_labels"
+                            app:layout_constraintEnd_toEndOf="@+id/movie_detail_genre_label"
+                            app:layout_constraintHorizontal_bias="1.0"
+                            app:layout_constraintStart_toStartOf="@+id/movie_detail_genre_label"
+                            app:layout_constraintTop_toBottomOf="@+id/movie_detail_genre_parent" />
+
+                        <View
+                            android:id="@+id/movie_detail_trailer_underline_view"
+                            style="@style/MovieLabelUnderlining"
+                            app:layout_constraintEnd_toEndOf="@+id/movie_detail_trailers_label"
+                            app:layout_constraintStart_toStartOf="@+id/movie_detail_trailers_label"
+                            app:layout_constraintTop_toBottomOf="@+id/movie_detail_trailers_label" />
+
+                        <LinearLayout
+                            android:id="@+id/movie_detail_trailer_tv_parent"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/dimen_8dp"
+                            android:layout_marginStart="@dimen/dimen_8dp"
+                            android:layout_marginTop="@dimen/dimen_8dp"
+                            android:orientation="vertical"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="@+id/movie_detail_trailer_underline_view" />
+
+                        <TextView
+                            android:id="@+id/movie_details_reviews_label"
+                            style="@style/MovieDetailTextViewSubHeaderLabel"
+                            android:text="@string/movie_detail_reviews_label"
+                            app:layout_constraintEnd_toEndOf="@+id/movie_detail_trailers_label"
+                            app:layout_constraintStart_toStartOf="@+id/movie_detail_trailer_tv_parent"
+                            app:layout_constraintTop_toBottomOf="@+id/movie_detail_trailer_tv_parent" />
+
+                        <View
+                            android:id="@+id/movie_detail_reviews_underline_view"
+                            style="@style/MovieLabelUnderlining"
+                            app:layout_constraintEnd_toEndOf="@+id/movie_details_reviews_label"
+                            app:layout_constraintStart_toStartOf="@+id/movie_details_reviews_label"
+                            app:layout_constraintTop_toBottomOf="@+id/movie_details_reviews_label" />
+
+                        <com.example.android.popularmovies.utility.ReviewRecyclerView
+                            android:id="@+id/movie_detail_reviews_tv_parent"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:minHeight="@dimen/dimen_40dp"
+                            android:maxHeight="250dp"
+                            android:layout_marginTop="@dimen/dimen_8dp"
+                            app:layout_constraintEnd_toEndOf="@+id/movie_details_reviews_label"
+                            app:layout_constraintStart_toStartOf="@+id/movie_detail_reviews_underline_view"
+                            app:layout_constraintTop_toBottomOf="@+id/movie_detail_reviews_underline_view">
+
+                        </com.example.android.popularmovies.utility.ReviewRecyclerView>
+
 
                         <android.support.v7.widget.RecyclerView
                             android:id="@+id/movie_detail_cast_recycler_view"

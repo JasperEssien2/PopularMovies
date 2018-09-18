@@ -16,6 +16,7 @@ public class SettingsSharedPreference {
     public final static String SORT_BY_SETTINGS_KEY = "sort_by";
     public final static String SORT_BY_SETTINGS_POPULARITY = ApiConstant.SORT_MOST_POPULAR;
     public final static String SORT_BY_SETTINGS_RATING = ApiConstant.SORT_HIGHEST_RATED;
+    public final static String SORT_BY_SETTINGS_FAVOURITES = "favourites";
 
     public SettingsSharedPreference(Context context){
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);

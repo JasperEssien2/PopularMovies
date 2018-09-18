@@ -21,8 +21,17 @@ public class MovieResponse {
     @SerializedName("credits")
     private Movie.MovieCredits credit;
 
-//    @SerializedName("genres")
-//    private List<String> genres;
+    @SerializedName("reviews")
+    private Movie.MovieReviews reviews;
+
+    @SerializedName("videos")
+    private Movie.MovieTrailers trailers;
+
+    @SerializedName("genres")
+    private List<Movie.MovieGenre> genres;
+
+    @SerializedName("status")
+    private String status;
 
     public int getPageNumber() {
         return pageNumber;
@@ -62,6 +71,38 @@ public class MovieResponse {
 
     public void setCredit(Movie.MovieCredits credit) {
         this.credit = credit;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Movie.MovieTrailers getTrailers() {
+        return trailers;
+    }
+
+    public void setTrailers(Movie.MovieTrailers trailers) {
+        this.trailers = trailers;
+    }
+
+    public List<Movie.MovieGenre> getGenres() {
+        return genres;
+    }
+
+    public void setGenres(List<Movie.MovieGenre> genres) {
+        this.genres = genres;
+    }
+
+    public Movie.MovieReviews getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(Movie.MovieReviews reviews) {
+        this.reviews = reviews;
     }
 
 //    public List<String> getGenres() {
