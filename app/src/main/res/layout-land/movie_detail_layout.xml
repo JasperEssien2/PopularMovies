@@ -277,8 +277,6 @@
                             android:id="@+id/movie_detail_reviews_tv_parent"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:minHeight="@dimen/dimen_40dp"
-                            android:maxHeight="250dp"
                             android:layout_marginTop="@dimen/dimen_8dp"
                             app:layout_constraintEnd_toEndOf="@+id/movie_details_reviews_label"
                             app:layout_constraintStart_toStartOf="@+id/movie_detail_reviews_underline_view"

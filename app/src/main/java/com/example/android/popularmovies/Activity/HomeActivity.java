@@ -40,9 +40,9 @@ import com.example.android.popularmovies.Interfaces.DatabaseCallbacks;
 import com.example.android.popularmovies.Model.Movie;
 import com.example.android.popularmovies.Model.MovieViewModel;
 import com.example.android.popularmovies.R;
-import com.example.android.popularmovies.utility.CustomScrollListener;
 import com.example.android.popularmovies.SettingsSharedPreference;
 import com.example.android.popularmovies.databinding.ActivityHomeBinding;
+import com.example.android.popularmovies.utility.CustomScrollListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,6 +89,7 @@ public class HomeActivity extends AppCompatActivity
     private int disconnectedCount = 0;
     private LiveData<List<Movie>> fromDatabase, fromApi;
     private Observer<List<Movie>> observerApi, observerDatabase;
+    private Menu menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -200,32 +201,23 @@ public class HomeActivity extends AppCompatActivity
      * @param menu menu to check
      */
     private void updateOptionItemSortBy(Menu menu) {
+        this.menu = menu;
         int group = 1, popularity = 0, rating = 1, favourite = 2;
 
         if (SettingsSharedPreference.getSortBySettings().equals(
                 SettingsSharedPreference.SORT_BY_SETTINGS_POPULARITY)) {
-            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(popularity).setChecked(true);
-            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(rating).setChecked(false);
-            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(favourite).setChecked(false);
-            Log.e(TAG, menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(popularity).setChecked(true).toString() +
-                    "--- Popularity setting");
+
+            menu.findItem(R.id.action_sort_movie).getSubMenu().getItem(popularity).setChecked(true);
         }
         if (SettingsSharedPreference.getSortBySettings().equals(
                 SettingsSharedPreference.SORT_BY_SETTINGS_RATING)) {
-            Log.e(TAG, menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(rating).setChecked(true).toString() +
-                    "--- Rating setting");
-            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(popularity).setChecked(false);
-            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(favourite).setChecked(false);
-            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(rating).setChecked(true);
+            menu.findItem(R.id.action_sort_movie).getSubMenu().getItem(rating).setChecked(true);
+
         }
 
         if (SettingsSharedPreference.getSortBySettings().equals(
                 SettingsSharedPreference.SORT_BY_SETTINGS_FAVOURITES)) {
-            Log.e(TAG, menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(favourite).setChecked(true).toString() +
-                    "--- Favourite setting");
-            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(popularity).setChecked(false);
-            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(favourite).setChecked(true);
-            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(rating).setChecked(false);
+            menu.findItem(R.id.action_sort_movie).getSubMenu().getItem(favourite).setChecked(true);
         }
     }
 
@@ -235,21 +227,16 @@ public class HomeActivity extends AppCompatActivity
      * @param menu menu to check
      */
     private void updateOptionItemChangeTheme(Menu menu) {
-//        int group = 2, dark = 1, light = 0;
+        int group = 2, dark = 1, light = 0;
+        MenuItem menuItem = menu.findItem(R.id.action_change_theme);
         if (SettingsSharedPreference.getThemeSettings().equals(
                 SettingsSharedPreference.THEME_SETTINGS_LIGHT)) {
-            Log.e(TAG, "******* " + menu.findItem(R.id.action_light_theme).toString() + " ****** ");
-            menu.findItem(R.id.action_light_theme).setChecked(true);
-            menu.findItem(R.id.action_dark_theme).setChecked(false);
-//            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(light).setChecked(true);
-//            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(dark).setChecked(false);
+            menuItem.getSubMenu().getItem(light).setChecked(true);
+
         }
         if (SettingsSharedPreference.getThemeSettings().equals(
                 SettingsSharedPreference.THEME_SETTINGS_DARK)) {
-            menu.findItem(R.id.action_light_theme).setChecked(false);
-            menu.findItem(R.id.action_dark_theme).setChecked(true);
-//            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(light).setChecked(false);
-//            menu.getItem(group).getSubMenu().getItem().getSubMenu().getItem(dark).setChecked(true);
+            menuItem.getSubMenu().getItem(dark).setChecked(true);
         }
     }
 
@@ -526,6 +513,8 @@ public class HomeActivity extends AppCompatActivity
             public void onClick(View view) {
                 onShowFavouriteFabClicked();
                 isFavouriteButtonClicked = true;
+                SettingsSharedPreference.setSortBySettings(SettingsSharedPreference.SORT_BY_SETTINGS_FAVOURITES);
+                menu.findItem(R.id.action_sort_movie).getSubMenu().getItem(2).setChecked(true);
             }
         });
         setUpSnackBarTheme(mNetworkStatusSnackbar);
@@ -837,7 +826,7 @@ public class HomeActivity extends AppCompatActivity
                 MOVIE_STATUS + movie.getMovieStatus() + "\n" +
                 GENRES + getGenres(movie.getGenres()) + "\n" +
                 TRAILER + ApiConstant.YOUTUBE_BROWSER_URI + movie.getTrailers()
-                .get(0).getTrailerLink() + "\n\n";
+                .get(0).getTrailerId() + "\n\n";
     }
 
     private String getGenres(List<Movie.MovieGenre> genres) {

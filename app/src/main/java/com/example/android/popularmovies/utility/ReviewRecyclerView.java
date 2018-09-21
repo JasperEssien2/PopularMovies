@@ -7,6 +7,8 @@ import android.util.AttributeSet;
 
 public class ReviewRecyclerView extends RecyclerView {
 
+    private static final String TAG = ReviewRecyclerView.class.getSimpleName();
+
     public ReviewRecyclerView(Context context) {
         super(context);
     }
@@ -21,11 +23,19 @@ public class ReviewRecyclerView extends RecyclerView {
 
     @Override
     protected void onMeasure(int widthSpec, int heightSpec) {
-        heightSpec = MeasureSpec.makeMeasureSpec(((int) convertPxToDp(getContext(), 250)), MeasureSpec.AT_MOST);
+        heightSpec = MeasureSpec.makeMeasureSpec(measureDimension(widthSpec, 350), MeasureSpec.AT_MOST);
+
+        setMeasuredDimension(widthSpec, heightSpec);
         super.onMeasure(widthSpec, heightSpec);
     }
 
-    public float convertPxToDp(Context context, float px) {
-        return px / context.getResources().getDisplayMetrics().density;
+    private int measureDimension(int widthSpec, int heightMeasureSpec) {
+        int desiredHeight = 350;
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+        int height;
+
+        height = Math.min(desiredHeight, heightSize);
+        return height;
     }
 }

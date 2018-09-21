@@ -336,7 +336,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
      */
     public static class MovieCastCrewAdapter extends RecyclerView.Adapter<MovieCastCrewAdapter.MovieCastViewHolder> {
 
-        private final int MOVIE_CAST_CIRCLE_IMAGE_ID = View.generateViewId();
         private List<Movie.MovieCastCrew> mCasts;
         private Context mContext;
         private FragmentManager mFragmentManager;
@@ -354,27 +353,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         @NonNull
         @Override
         public MovieCastViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new MovieCastViewHolder(createImageLayout());
-        }
-
-        /**
-         * The recyclerview item
-         *
-         * @return datatype CircleImageView
-         */
-        private CircleImageView createImageLayout() {
-            RecyclerView.LayoutParams layoutParams = new RecyclerView.LayoutParams(
-                    55, 55);
-            layoutParams.setMargins(4, 2, 4, 2);
-            CircleImageView circleImageView = new CircleImageView(mContext);
-            circleImageView.setId(MOVIE_CAST_CIRCLE_IMAGE_ID);
-            circleImageView.setLayoutParams(layoutParams);
-            circleImageView.setBorderColor(getColor(R.color.colorAccent));
-            circleImageView.setCircleBackgroundColor(getColor(R.color.colorDarkGray));
-            circleImageView.setBorderWidth(2);
-            circleImageView.setMinimumHeight(60);
-            circleImageView.setMinimumWidth(60);
-            return circleImageView;
+            CircleImageView circleImageView = (CircleImageView)
+                    LayoutInflater.from(mContext).inflate(R.layout.item_cast_image, parent, false);
+            return new MovieCastViewHolder(circleImageView);
         }
 
         /**

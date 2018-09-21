@@ -32,6 +32,7 @@ import android.widget.TextView;
 import com.example.android.popularmovies.Adapter.MovieAdapter;
 import com.example.android.popularmovies.Constants.ApiConstant;
 import com.example.android.popularmovies.Constants.BundleConstants;
+import com.example.android.popularmovies.Interfaces.DatabaseCallbacks;
 import com.example.android.popularmovies.Model.Movie;
 import com.example.android.popularmovies.Model.MovieResponse;
 import com.example.android.popularmovies.Model.MovieViewModel;
@@ -51,7 +52,7 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Response;
 
-public class MovieDetailBottomSheets extends BottomSheetDialogFragment {
+public class MovieDetailBottomSheets extends BottomSheetDialogFragment implements DatabaseCallbacks {
     private static final String TAG = MovieDetailBottomSheets.class.getSimpleName();
     private MovieDetailLayoutBinding mMovieDetailLayoutBinding;
     private BottomSheetBehavior.BottomSheetCallback mBottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
@@ -72,6 +73,8 @@ public class MovieDetailBottomSheets extends BottomSheetDialogFragment {
     private MovieAdapter.MovieCastCrewAdapter adapter;
     private MovieViewModel mMovieViewModel;
     private boolean isDarkThemeSetting = true;
+    private String youTubeBaseUrl = "http://img.youtube.com/vi/[video_id]/0.jpg";
+    private String regexPattern = "\\[video_id\\]";
 
     //TODO: create a bottom horizontal recyclerview where all the cast image will be shown when any is clicked
     //TODO: it will show the details, the role they acted etc!
@@ -93,11 +96,37 @@ public class MovieDetailBottomSheets extends BottomSheetDialogFragment {
         mMovieViewModel = ViewModelProviders
                 .of(getActivity())
                 .get(MovieViewModel.class);
+        mMovieViewModel.setDatabaseBottomSheetCallbacks(this);
         SettingsSharedPreference.initSettingsSharedPrefernce(getContext());
         isDarkThemeSetting = SettingsSharedPreference.getThemeSettings()
                 .equals(SettingsSharedPreference.THEME_SETTINGS_DARK);
         layoutManager = new LinearLayoutManager(getContext(),
                 LinearLayoutManager.HORIZONTAL, false);
+    }
+
+    @Override
+    public void itemDeletedSuccessfully() {
+        mMovieDetailLayoutBinding.movieDetailStar.setImageResource(R.drawable.ic_not_added_to_fav);
+    }
+
+    @Override
+    public void itemInsertedSuccessfully() {
+        mMovieDetailLayoutBinding.movieDetailStar.setImageResource(R.drawable.ic_rating);
+    }
+
+    @Override
+    public void itemAlreadyExistInDatabase(boolean addItem, boolean isBottomSheet, boolean doItemExists) {
+
+    }
+
+    @Override
+    public void allItemSuccessfulyInserted() {
+
+    }
+
+    @Override
+    public void dismissLoadingSnackbar() {
+
     }
 
     @Override
@@ -290,8 +319,21 @@ public class MovieDetailBottomSheets extends BottomSheetDialogFragment {
                 new MovieAdapter.MovieReviewsAdapter(reviews, isDarkThemeSetting, getContext());
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(),
                 LinearLayoutManager.VERTICAL, false);
+//        linearLayoutManager.setMeasuredDimension(linearLayoutManager.getWidth(),
+//                linearLayoutManager.getM);
+//        linearLayoutManager.onM
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(movieReviewsAdapter);
+    }
+
+    public final void loadYouTubeThumbnail(String videoId, ImageView imageView) {
+        Picasso.get()
+                .load(buildYouTubeUrl(videoId))
+                .into(imageView);
+    }
+
+    private String buildYouTubeUrl(String videoId) {
+        return youTubeBaseUrl.replaceAll(regexPattern, videoId);
     }
 
     /**
@@ -301,6 +343,7 @@ public class MovieDetailBottomSheets extends BottomSheetDialogFragment {
      *                 (only renders maximum of 3 trailers)
      */
     private void setUpTrailers(List<Movie.MovieTrailer> trailers) {
+
         if (trailers == null) return;
         int count = 0;
         for (final Movie.MovieTrailer movieTrailer : trailers) {
@@ -321,6 +364,9 @@ public class MovieDetailBottomSheets extends BottomSheetDialogFragment {
             });
             trailerBinding.movieDetailTrailerItemTrailerCount.setText(String.format("Trailer %d", count));
             mMovieDetailLayoutBinding.movieDetailTrailerTvParent.addView(trailerBinding.getRoot(), count);
+            trailerBinding.movieDetailTrailerItemIcon.bringToFront();
+
+            loadYouTubeThumbnail(movieTrailer.getTrailerId(), trailerBinding.movieDetailTrailerItemTrailerImage);
             if (count == 2) break;
             count++;
         }
@@ -357,10 +403,10 @@ public class MovieDetailBottomSheets extends BottomSheetDialogFragment {
      */
     public void watchMovieTrailer(Movie.MovieTrailer movieTrailer) {
         Intent youtubeAppIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(ApiConstant.YOUTUBE_APP_URI
-                + movieTrailer.getTrailerLink()));
+                + movieTrailer.getTrailerId()));
 
         Intent youtubeBrowserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(
-                ApiConstant.YOUTUBE_BROWSER_URI + movieTrailer.getTrailerLink()));
+                ApiConstant.YOUTUBE_BROWSER_URI + movieTrailer.getTrailerId()));
 
         try {
             getContext().startActivity(youtubeAppIntent);

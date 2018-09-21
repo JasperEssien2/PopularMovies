@@ -22,4 +22,7 @@
     <dimen name="cast_crew_detail_id">67888</dimen>
     <dimen name="splash_screen_feature_text_size">24sp</dimen>
     <dimen name="splashscreen_movie_app_name_text_size">32sp</dimen>
+    <dimen name="dimen_trailer_image_view_50dp">50dp</dimen>
+    <dimen name="dimen_trailer_image_view_60dp">60dp</dimen>
+    <dimen name="dimen_45dp">45dp</dimen>
 </resources>

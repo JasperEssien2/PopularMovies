@@ -28,6 +28,7 @@ public class MovieViewModel extends AndroidViewModel {
     private static final int PAGE_START = 1;
     private static final String TAG = MovieViewModel.class.getSimpleName();
     private static DatabaseCallbacks databaseCallbacks;
+    private static DatabaseCallbacks databaseBottomSheetCallbacks;
     private MovieFavouriteDatabase movieFavouriteDatabase;
     private List<Movie> movieList = new ArrayList<>();
     private LiveData<List<Movie>> movieListLiveData;
@@ -48,6 +49,10 @@ public class MovieViewModel extends AndroidViewModel {
 
     public static void setDatabaseCallbacks(DatabaseCallbacks databaseCallbacks) {
         MovieViewModel.databaseCallbacks = databaseCallbacks;
+    }
+
+    public static void setDatabaseBottomSheetCallbacks(DatabaseCallbacks databaseCallbacks) {
+        MovieViewModel.databaseBottomSheetCallbacks = databaseCallbacks;
     }
 
     public LiveData<List<Movie>> getMoviesFromDatabase() {
@@ -183,7 +188,7 @@ public class MovieViewModel extends AndroidViewModel {
      * @param sortBy    a string to indicate what type of movie list to get from API
      * @param queryType int to indicate queryType if its a search query or discover query
      * @param query     a string for search query
-     * @return LiveData<List                               <                               Movie>> object
+     * @return LiveData<List                                                                                                                               <                                                                                                                               Movie>> object
      */
     public LiveData<List<Movie>> getMovieListLiveData(String sortBy, int queryType, String query) {
         if (mutableLiveData == null) {
@@ -231,6 +236,7 @@ public class MovieViewModel extends AndroidViewModel {
         @Override
         protected void onPostExecute(Void aVoid) {
             databaseCallbacks.itemDeletedSuccessfully();
+            databaseBottomSheetCallbacks.itemDeletedSuccessfully();
         }
     }
 
@@ -252,6 +258,7 @@ public class MovieViewModel extends AndroidViewModel {
         protected void onPostExecute(Void aVoid) {
             //super.onPostExecute(aVoid);
             databaseCallbacks.itemInsertedSuccessfully();
+            databaseBottomSheetCallbacks.itemInsertedSuccessfully();
         }
     }
 
