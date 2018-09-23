@@ -100,7 +100,7 @@ public class HomeActivity extends AppCompatActivity
         mMovieViewModel = ViewModelProviders
                 .of(this)
                 .get(MovieViewModel.class);
-        mMovieViewModel.setDatabaseCallbacks(this);
+        MovieViewModel.setDatabaseCallbacks(this);
         setUpUi(savedInstanceState);
         if (!SettingsSharedPreference.getSortBySettings()
                 .equals(SettingsSharedPreference.SORT_BY_SETTINGS_FAVOURITES))
@@ -208,16 +208,18 @@ public class HomeActivity extends AppCompatActivity
                 SettingsSharedPreference.SORT_BY_SETTINGS_POPULARITY)) {
 
             menu.findItem(R.id.action_sort_movie).getSubMenu().getItem(popularity).setChecked(true);
+            isFavouriteButtonClicked = false;
         }
         if (SettingsSharedPreference.getSortBySettings().equals(
                 SettingsSharedPreference.SORT_BY_SETTINGS_RATING)) {
             menu.findItem(R.id.action_sort_movie).getSubMenu().getItem(rating).setChecked(true);
-
+            isFavouriteButtonClicked = false;
         }
 
         if (SettingsSharedPreference.getSortBySettings().equals(
                 SettingsSharedPreference.SORT_BY_SETTINGS_FAVOURITES)) {
             menu.findItem(R.id.action_sort_movie).getSubMenu().getItem(favourite).setChecked(true);
+            isFavouriteButtonClicked = true;
         }
     }
 
@@ -260,8 +262,10 @@ public class HomeActivity extends AppCompatActivity
                 SettingsSharedPreference.setSortBySettings(ApiConstant.SORT_MOST_POPULAR);
                 isQueryTypeSearch = false;
                 searchView.clearFocus();
+                removeApiObserver();
                 setObserverApi();
-                isFavouriteButtonClicked = true;
+                isFavouriteButtonClicked = false;
+                swipeRefreshLayout.setRefreshing(false);
                 loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_DISCOVER, null);
                 break;
             case R.id.action_sort_by_rating:
@@ -269,8 +273,10 @@ public class HomeActivity extends AppCompatActivity
                 isQueryTypeSearch = false;
                 searchView.clearFocus();
                 SettingsSharedPreference.setSortBySettings(ApiConstant.SORT_HIGHEST_RATED);
+                removeApiObserver();
                 setObserverApi();
-                isFavouriteButtonClicked = true;
+                isFavouriteButtonClicked = false;
+                swipeRefreshLayout.setRefreshing(false);
                 loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_DISCOVER, null);
                 break;
             case R.id.action_sort_by_favourite:
@@ -278,10 +284,9 @@ public class HomeActivity extends AppCompatActivity
                 isQueryTypeSearch = false;
                 searchView.clearFocus();
                 SettingsSharedPreference.setSortBySettings(SettingsSharedPreference.SORT_BY_SETTINGS_FAVOURITES);
-                //setObserverApi();
                 isFavouriteButtonClicked = true;
                 onShowFavouriteFabClicked();
-                //loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_DISCOVER, null);
+                swipeRefreshLayout.setRefreshing(false);
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -542,11 +547,18 @@ public class HomeActivity extends AppCompatActivity
         mMovieAdapter.clearList();
         fromDatabase =
                 mMovieViewModel.getMoviesFromDatabase();
-        if (fromApi != null)
-            fromApi.removeObserver(observerApi);
+        removeApiObserver();
 
         fromDatabase
                 .observe(this, observerDatabase);
+    }
+
+    /**
+     * This method handles the removal of Livedata<Movie> observer gotten from the Api
+     */
+    private void removeApiObserver() {
+        if (fromApi != null)
+            fromApi.removeObserver(observerApi);
     }
 
     /**
@@ -576,9 +588,7 @@ public class HomeActivity extends AppCompatActivity
             public void loadMoreItems() {
                 //If current list in adapter is less than 20.. no need showing loading snack bar
 //                if (!isFavouriteButtonClicked) {
-                if (mMovieAdapter.getItemCount() >= 20)
-                    isLoading = true;
-                else isLoading = false;
+                isLoading = mMovieAdapter.getItemCount() >= 20;
                 pageNumber++;
                 mLoadingSnackBar.show();
                 if (mMovieAdapter.getItemCount() <= 20) mLoadingSnackBar.dismiss();
@@ -616,6 +626,8 @@ public class HomeActivity extends AppCompatActivity
             @Override
             public void onRefresh() {
                 if (!isFavouriteButtonClicked) {
+                    removeApiObserver();
+                    setObserverApi();
                     if (isQueryTypeSearch)
                         loadFirstItems(SettingsSharedPreference.getSortBySettings(), QUERY_TYPE_SEARCH,
                                 mQueryText);
@@ -651,7 +663,6 @@ public class HomeActivity extends AppCompatActivity
      * @param query     query string
      */
     private void loadNextItems(String sortBy, int queryType, String query) {
-        //isFavouriteButtonClicked = false;
         mMovieAdapter.updateIsLoadingFalse();
         hideEmptyState();
         mMovieViewModel.getNextMovieItemsFromApi(sortBy, queryType, query, pageNumber);
@@ -692,7 +703,6 @@ public class HomeActivity extends AppCompatActivity
     private void onDisconnected() {
         mActivityHomeBinding.moviesLoadingProgressbar.setVisibility(View.GONE);
         mNetworkStatusSnackbar.setText(NO_CONNECTION);
-        //mNetworkStatusSnackbar.getView().
         mNetworkStatusSnackbar.show();
     }
 
