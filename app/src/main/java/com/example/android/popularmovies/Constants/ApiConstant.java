@@ -1,8 +1,10 @@
 package com.example.android.popularmovies.Constants;
 
+import com.example.android.popularmovies.BuildConfig;
+
 public class ApiConstant {
 
-    public static final String API_KEY = "9ee30874cd8bda9d9e9bdc13fe1a4ebb";
+    public static final String API_KEY = BuildConfig.API_KEY;
     public static final String API_KEY_LABEL = "api_key";
 
     public static final String BASE_URL = "https://api.themoviedb.org/3/";
