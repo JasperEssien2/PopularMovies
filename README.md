@@ -14,5 +14,9 @@ TheMovieDb Api
 Retrofit - For Api calls and to parse list of movies returned by Api.
 Picasso - for loading images directly from web.
 
+## Images
+<img src="/Popular_movies_screenshot/image0.jpg" width="180" height="360" /> | <img src="/Popular_movies_screenshot/image1.jpg" width="180" height="360" />
+<img src="/Popular_movies_screenshot/image2.jpg" width="180" height="360" />
+
 ## Version 
 1.0
